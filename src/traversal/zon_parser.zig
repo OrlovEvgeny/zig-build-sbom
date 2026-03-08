@@ -82,10 +82,21 @@ fn fieldName(ast: Ast, field_node: Ast.Node.Index) ?[]const u8 {
     return raw;
 }
 
+// 0.15+ has nodeTag/nodeMainToken helpers; 0.14.0 only has multi-array access.
+fn getNodeTag(ast: Ast, node: Ast.Node.Index) Ast.Node.Tag {
+    if (@hasDecl(Ast, "nodeTag")) return ast.nodeTag(node);
+    return ast.nodes.items(.tag)[node];
+}
+
+fn getNodeMainToken(ast: Ast, node: Ast.Node.Index) Ast.TokenIndex {
+    if (@hasDecl(Ast, "nodeMainToken")) return ast.nodeMainToken(node);
+    return ast.nodes.items(.main_token)[node];
+}
+
 fn extractStringLiteral(ast: Ast, node: Ast.Node.Index) ?[]const u8 {
-    const tag = ast.nodeTag(node);
+    const tag = getNodeTag(ast, node);
     if (tag != .string_literal) return null;
-    const token = ast.nodeMainToken(node);
+    const token = getNodeMainToken(ast, node);
     const raw = ast.tokenSlice(token);
     if (raw.len >= 2 and raw[0] == '"' and raw[raw.len - 1] == '"') {
         return raw[1 .. raw.len - 1];
@@ -94,9 +105,9 @@ fn extractStringLiteral(ast: Ast, node: Ast.Node.Index) ?[]const u8 {
 }
 
 fn extractStringOrDotLiteral(ast: Ast, node: Ast.Node.Index) ?[]const u8 {
-    const tag = ast.nodeTag(node);
+    const tag = getNodeTag(ast, node);
     if (tag == .enum_literal) {
-        const token = ast.nodeMainToken(node);
+        const token = getNodeMainToken(ast, node);
         return ast.tokenSlice(token);
     }
     return extractStringLiteral(ast, node);

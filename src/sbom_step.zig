@@ -16,7 +16,7 @@ pub const SbomStep = struct {
     output_file: std.Build.LazyPath,
 
     // Additional components injected by MicroZig integration or other extensions.
-    extra_components: std.ArrayList(sbom_model.Component),
+    extra_components: std.ArrayListUnmanaged(sbom_model.Component),
     extra_properties: []const sbom_model.Property,
 
     pub const base_id: std.Build.Step.Id = .custom;
@@ -143,7 +143,7 @@ pub const SbomStep = struct {
         // Serialize Bom to intermediate JSON using a flat (non-recursive) writer.
         // std.json.Stringify uses anytype-based comptime dispatch that causes
         // stack overflow in build runner worker threads (~512KB stack on macOS).
-        var out: std.ArrayList(u8) = .{};
+        var out: std.ArrayListUnmanaged(u8) = .{};
         defer out.deinit(allocator);
         serializeBomJson(&out, allocator, bom) catch |err| {
             try step.addError("SBOM: intermediate JSON serialization failed: {}", .{err});
@@ -194,9 +194,9 @@ pub const SbomStep = struct {
         } else null;
 
         // Partition components: Zig packages get "complete", C heuristics get "incomplete".
-        var zig_refs: std.ArrayList([]const u8) = .{};
+        var zig_refs: std.ArrayListUnmanaged([]const u8) = .{};
         defer zig_refs.deinit(allocator);
-        var c_refs: std.ArrayList([]const u8) = .{};
+        var c_refs: std.ArrayListUnmanaged([]const u8) = .{};
         defer c_refs.deinit(allocator);
 
         for (ctx.components.items) |comp| {
@@ -251,7 +251,7 @@ pub const SbomStep = struct {
 // Uses ArrayList(u8) directly to avoid anytype/comptime dispatch depth
 // that causes stack overflow in build runner worker threads.
 
-fn serializeBomJson(out: *std.ArrayList(u8), a: std.mem.Allocator, bom: sbom_model.Bom) !void {
+fn serializeBomJson(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, bom: sbom_model.Bom) !void {
     try out.appendSlice(a, "{");
     try appendStr(out, a, "\"serial_number\":");
     try appendQuoted(out, a, bom.serial_number);
@@ -277,7 +277,7 @@ fn serializeBomJson(out: *std.ArrayList(u8), a: std.mem.Allocator, bom: sbom_mod
     try appendStr(out, a, "]}");
 }
 
-fn serializeMetadata(out: *std.ArrayList(u8), a: std.mem.Allocator, meta: sbom_model.Metadata) !void {
+fn serializeMetadata(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, meta: sbom_model.Metadata) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"timestamp\":");
     try appendQuoted(out, a, meta.timestamp);
@@ -302,7 +302,7 @@ fn serializeMetadata(out: *std.ArrayList(u8), a: std.mem.Allocator, meta: sbom_m
     try out.append(a, '}');
 }
 
-fn serializeTool(out: *std.ArrayList(u8), a: std.mem.Allocator, tool: sbom_model.Tool) !void {
+fn serializeTool(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, tool: sbom_model.Tool) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"vendor\":");
     try appendQuoted(out, a, tool.vendor);
@@ -313,7 +313,7 @@ fn serializeTool(out: *std.ArrayList(u8), a: std.mem.Allocator, tool: sbom_model
     try out.append(a, '}');
 }
 
-fn serializeComponent(out: *std.ArrayList(u8), a: std.mem.Allocator, comp: sbom_model.Component) !void {
+fn serializeComponent(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, comp: sbom_model.Component) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"type\":");
     try appendQuoted(out, a, @tagName(comp.type));
@@ -379,7 +379,7 @@ fn serializeComponent(out: *std.ArrayList(u8), a: std.mem.Allocator, comp: sbom_
     try appendStr(out, a, "]}");
 }
 
-fn serializeDependency(out: *std.ArrayList(u8), a: std.mem.Allocator, dep: sbom_model.Dependency) !void {
+fn serializeDependency(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, dep: sbom_model.Dependency) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"ref\":");
     try appendQuoted(out, a, dep.ref);
@@ -391,7 +391,7 @@ fn serializeDependency(out: *std.ArrayList(u8), a: std.mem.Allocator, dep: sbom_
     try appendStr(out, a, "]}");
 }
 
-fn serializeComposition(out: *std.ArrayList(u8), a: std.mem.Allocator, comp: sbom_model.Composition) !void {
+fn serializeComposition(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, comp: sbom_model.Composition) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"aggregate\":");
     try appendQuoted(out, a, @tagName(comp.aggregate));
@@ -403,7 +403,7 @@ fn serializeComposition(out: *std.ArrayList(u8), a: std.mem.Allocator, comp: sbo
     try appendStr(out, a, "]}");
 }
 
-fn serializeManufacturer(out: *std.ArrayList(u8), a: std.mem.Allocator, mfr: sbom_model.OrganizationalEntity) !void {
+fn serializeManufacturer(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, mfr: sbom_model.OrganizationalEntity) !void {
     try out.append(a, '{');
     try appendStr(out, a, "\"name\":");
     try appendQuoted(out, a, mfr.name);
@@ -428,11 +428,11 @@ fn serializeManufacturer(out: *std.ArrayList(u8), a: std.mem.Allocator, mfr: sbo
     try out.append(a, '}');
 }
 
-fn appendStr(out: *std.ArrayList(u8), a: std.mem.Allocator, s: []const u8) !void {
+fn appendStr(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, s: []const u8) !void {
     try out.appendSlice(a, s);
 }
 
-fn appendQuoted(out: *std.ArrayList(u8), a: std.mem.Allocator, s: []const u8) !void {
+fn appendQuoted(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, s: []const u8) !void {
     try out.append(a, '"');
     for (s) |c| {
         switch (c) {
@@ -457,7 +457,7 @@ fn appendQuoted(out: *std.ArrayList(u8), a: std.mem.Allocator, s: []const u8) !v
     try out.append(a, '"');
 }
 
-fn appendInt(out: *std.ArrayList(u8), a: std.mem.Allocator, value: u32) !void {
+fn appendInt(out: *std.ArrayListUnmanaged(u8), a: std.mem.Allocator, value: u32) !void {
     var buf: [10]u8 = undefined;
     var pos: usize = 0;
     var v = value;
@@ -481,7 +481,7 @@ fn appendInt(out: *std.ArrayList(u8), a: std.mem.Allocator, value: u32) !void {
 const testing = std.testing;
 
 test "appendQuoted: control characters escaped per RFC 8259" {
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
 
     try appendQuoted(&out, testing.allocator, "a\x00b\x08c\x0Bd\x1F");
@@ -494,7 +494,7 @@ test "appendQuoted: control characters escaped per RFC 8259" {
 }
 
 test "appendQuoted: standard escapes" {
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
 
     try appendQuoted(&out, testing.allocator, "hello \"world\"\nline2\\end");
@@ -503,14 +503,14 @@ test "appendQuoted: standard escapes" {
 }
 
 test "appendInt: zero" {
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try appendInt(&out, testing.allocator, 0);
     try testing.expectEqualStrings("0", out.items);
 }
 
 test "appendInt: max u32" {
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try appendInt(&out, testing.allocator, std.math.maxInt(u32));
     try testing.expectEqualStrings("4294967295", out.items);
@@ -535,7 +535,7 @@ test "serializeBomJson: unicode in component names" {
         .compositions = &.{},
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 
@@ -570,7 +570,7 @@ test "serializeBomJson: deeply nested special chars" {
         .compositions = &.{},
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 
@@ -614,7 +614,7 @@ test "serializeBomJson: round-trip all license variants" {
         .compositions = &.{},
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 
@@ -645,7 +645,7 @@ test "serializeBomJson: round-trip all license variants" {
 }
 
 test "appendQuoted: all control characters 0x00-0x1F" {
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
 
     // Build a string with every control character.
@@ -693,7 +693,7 @@ test "serializeBomJson: round-trip through std.json" {
         }},
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 
@@ -771,7 +771,7 @@ test "serializeBomJson: comprehensive round-trip with all field variants" {
         },
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 
@@ -849,7 +849,7 @@ test "serializeBomJson: composition serializes assemblies correctly" {
         },
     };
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     defer out.deinit(testing.allocator);
     try serializeBomJson(&out, testing.allocator, bom);
 

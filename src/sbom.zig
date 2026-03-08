@@ -1,5 +1,15 @@
 const std = @import("std");
 
+// Zig 0.14.0 has std.json.stringifyAlloc; 0.15+ replaced it with
+// std.json.Stringify.valueAlloc. Pick whichever is available.
+fn jsonStringifyAlloc(allocator: std.mem.Allocator, value: anytype) ![]u8 {
+    if (@hasDecl(std.json, "stringifyAlloc")) {
+        return std.json.stringifyAlloc(allocator, value, .{});
+    } else {
+        return std.json.Stringify.valueAlloc(allocator, value, .{});
+    }
+}
+
 pub const Bom = struct {
     serial_number: []const u8,
     version: u32 = 1,
@@ -239,7 +249,7 @@ test "Bom: std.json serialize with hardware properties and manufacturer" {
         },
     };
 
-    const json_bytes = try std.json.Stringify.valueAlloc(testing.allocator, bom, .{});
+    const json_bytes = try jsonStringifyAlloc(testing.allocator, bom);
     defer testing.allocator.free(json_bytes);
 
     try testing.expect(json_bytes.len > 0);
@@ -307,7 +317,7 @@ test "Bom: std.json round-trip with all field variants" {
     };
 
     // Serialize to JSON.
-    const json_bytes = try std.json.Stringify.valueAlloc(testing.allocator, original, .{});
+    const json_bytes = try jsonStringifyAlloc(testing.allocator, original);
     defer testing.allocator.free(json_bytes);
 
     // Parse back.

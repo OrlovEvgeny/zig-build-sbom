@@ -47,7 +47,7 @@ fn buildHardwareProperties(
     fw: anytype,
     options: MicroZigSbomOptions,
 ) []const sbom_model.Property {
-    var props: std.ArrayList(sbom_model.Property) = .{};
+    var props: std.ArrayListUnmanaged(sbom_model.Property) = .{};
 
     const target = fw.target;
 
@@ -142,7 +142,7 @@ pub fn buildHardwarePropertiesFromInfo(
     include_cpu_info: bool,
     include_memory_layout: bool,
 ) ![]const sbom_model.Property {
-    var props: std.ArrayList(sbom_model.Property) = .{};
+    var props: std.ArrayListUnmanaged(sbom_model.Property) = .{};
     errdefer props.deinit(allocator);
 
     if (include_cpu_info) {

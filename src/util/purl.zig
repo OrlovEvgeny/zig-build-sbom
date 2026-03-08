@@ -84,7 +84,7 @@ fn purlPercentEncode(allocator: std.mem.Allocator, input: []const u8) PurlError!
         return allocator.dupe(u8, input) catch return PurlError.OutOfMemory;
     }
 
-    var out: std.ArrayList(u8) = .{};
+    var out: std.ArrayListUnmanaged(u8) = .{};
     errdefer out.deinit(allocator);
     const hex = "0123456789ABCDEF";
     for (input) |c| {

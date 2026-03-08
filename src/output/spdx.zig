@@ -338,7 +338,7 @@ fn idValueExists(id_map: *const std.StringHashMap([]const u8), needle: []const u
 
 /// Serializes a Bom to SPDX 2.3 JSON and returns the bytes.
 pub fn serializeAlloc(allocator: std.mem.Allocator, bom: sbom_model.Bom) SerializeError![]u8 {
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     errdefer buf.deinit(allocator);
 
     serialize(allocator, bom, buf.writer(allocator)) catch return SerializeError.OutOfMemory;
@@ -389,7 +389,7 @@ fn makeTestBom() sbom_model.Bom {
 
 test "SPDX JSON: document header" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -402,7 +402,7 @@ test "SPDX JSON: document header" {
 
 test "SPDX JSON: documentNamespace unique" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -413,7 +413,7 @@ test "SPDX JSON: documentNamespace unique" {
 
 test "SPDX JSON: DESCRIBES relationship" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -424,7 +424,7 @@ test "SPDX JSON: DESCRIBES relationship" {
 
 test "SPDX JSON: DEPENDS_ON relationship" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -435,7 +435,7 @@ test "SPDX JSON: DEPENDS_ON relationship" {
 
 test "SPDX JSON: packages present" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -467,7 +467,7 @@ test "bomRefToSpdxId: truncation" {
 
 test "SPDX JSON: supplier field present" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
@@ -497,7 +497,7 @@ test "SPDX JSON: supplier derived from manufacturer" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     try testing.expect(std.mem.indexOf(u8, buf.items, "Organization: Acme Corp") != null);
@@ -526,7 +526,7 @@ test "SPDX JSON: multiple DEPENDS_ON relationships" {
         },
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
 
@@ -556,7 +556,7 @@ test "SPDX JSON: component with no version" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -582,7 +582,7 @@ test "SPDX: licenseDeclared populated when license available" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -614,7 +614,7 @@ test "SPDX: empty bom with no components" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -644,7 +644,7 @@ test "SPDX: component with multiple hashes" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -713,7 +713,7 @@ test "SPDX: colliding bom_refs produce distinct IDs in full serialization" {
         .compositions = &.{},
     };
 
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
 
@@ -746,11 +746,11 @@ test "SPDX: document namespace uniqueness across serializations" {
     var bom_b = bom_a;
     bom_b.serial_number = "urn:uuid:bbbb-2222";
 
-    var buf_a: std.ArrayList(u8) = .{};
+    var buf_a: std.ArrayListUnmanaged(u8) = .{};
     defer buf_a.deinit(testing.allocator);
     try serialize(testing.allocator, bom_a, buf_a.writer(testing.allocator));
 
-    var buf_b: std.ArrayList(u8) = .{};
+    var buf_b: std.ArrayListUnmanaged(u8) = .{};
     defer buf_b.deinit(testing.allocator);
     try serialize(testing.allocator, bom_b, buf_b.writer(testing.allocator));
 
@@ -799,7 +799,7 @@ test "SPDX: named license produces correct licenseDeclared" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     try testing.expect(std.mem.indexOf(u8, buf.items, "\"licenseDeclared\": \"Proprietary-v3\"") != null);
@@ -822,7 +822,7 @@ test "SPDX: no_assertion license produces NOASSERTION" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
     try testing.expect(std.mem.indexOf(u8, buf.items, "\"licenseDeclared\": \"NOASSERTION\"") != null);
@@ -846,7 +846,7 @@ test "SPDX: zero dependencies produces valid document" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
 
@@ -878,7 +878,7 @@ test "SPDX: component with purl generates externalRefs" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
 
@@ -921,7 +921,7 @@ test "SPDX JSON: round-trip serialize then parse" {
         .compositions = &.{},
     };
 
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, buf.writer(testing.allocator));
 

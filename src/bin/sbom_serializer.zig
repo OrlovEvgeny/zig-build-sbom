@@ -58,7 +58,7 @@ pub fn main() !void {
 
     const bom = parsed.value;
 
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(allocator);
     const w = buf.writer(allocator);
 

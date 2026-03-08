@@ -34,7 +34,7 @@ pub fn extractCSourceFiles(
 ) ExtractError!void {
     const allocator = ctx.allocator;
 
-    var c_paths: std.ArrayList([]const u8) = .{};
+    var c_paths: std.ArrayListUnmanaged([]const u8) = .{};
     defer c_paths.deinit(allocator);
 
     for (compile.root_module.link_objects.items) |link_obj| {

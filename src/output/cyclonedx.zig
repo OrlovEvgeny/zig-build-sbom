@@ -191,7 +191,7 @@ pub fn serialize(
 
 /// Serializes a Bom to CycloneDX 1.6 JSON and returns the bytes.
 pub fn serializeJsonAlloc(allocator: std.mem.Allocator, bom: sbom_model.Bom) SerializeError![]u8 {
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     errdefer buf.deinit(allocator);
 
     serialize(allocator, bom, .json, buf.writer(allocator)) catch return SerializeError.OutOfMemory;
@@ -643,7 +643,7 @@ fn makeTestBom() sbom_model.Bom {
 
 test "CycloneDX JSON: bomFormat and specVersion" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -655,7 +655,7 @@ test "CycloneDX JSON: bomFormat and specVersion" {
 
 test "CycloneDX JSON: firmware component type" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -667,7 +667,7 @@ test "CycloneDX JSON: firmware component type" {
 
 test "CycloneDX JSON: hashes present" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -679,7 +679,7 @@ test "CycloneDX JSON: hashes present" {
 
 test "CycloneDX JSON: compositions aggregate" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -690,7 +690,7 @@ test "CycloneDX JSON: compositions aggregate" {
 
 test "CycloneDX JSON: tools metadata" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -701,7 +701,7 @@ test "CycloneDX JSON: tools metadata" {
 
 test "CycloneDX JSON: dependencies" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -713,7 +713,7 @@ test "CycloneDX JSON: dependencies" {
 
 test "CycloneDX XML: basic structure" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
@@ -733,7 +733,7 @@ test "componentTypeString: all types" {
 }
 
 test "writeXmlEscaped: special characters" {
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try writeXmlEscaped(buf.writer(testing.allocator), "<script>alert('x\"&y')</script>");
     try testing.expectEqualStrings("&lt;script&gt;alert(&apos;x&quot;&amp;y&apos;)&lt;/script&gt;", buf.items);
@@ -757,7 +757,7 @@ test "CycloneDX XML: escapes special chars in name" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -787,7 +787,7 @@ test "CycloneDX JSON: manufacturer with contact" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
     const output = buf.items;
@@ -807,7 +807,7 @@ test "CycloneDX JSON: empty components list" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
     const output = buf.items;
@@ -831,7 +831,7 @@ test "CycloneDX JSON: component with no version" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
     const output = buf.items;
@@ -856,7 +856,7 @@ test "CycloneDX XML: licenses and properties" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -885,7 +885,7 @@ test "CycloneDX XML: metadata component includes licenses and properties" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -913,7 +913,7 @@ test "CycloneDX XML: manufacturer section" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -941,7 +941,7 @@ test "CycloneDX XML: description on device component" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -975,7 +975,7 @@ test "CycloneDX: component with all optional fields" {
     };
 
     // JSON output.
-    var json_buf: std.ArrayList(u8) = .{};
+    var json_buf: std.ArrayListUnmanaged(u8) = .{};
     defer json_buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, json_buf.writer(testing.allocator));
     const json_out = json_buf.items;
@@ -988,7 +988,7 @@ test "CycloneDX: component with all optional fields" {
     try testing.expect(std.mem.indexOf(u8, json_out, "\"distribution\"") != null);
 
     // XML output.
-    var xml_buf: std.ArrayList(u8) = .{};
+    var xml_buf: std.ArrayListUnmanaged(u8) = .{};
     defer xml_buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, xml_buf.writer(testing.allocator));
     const xml_out = xml_buf.items;
@@ -1023,7 +1023,7 @@ test "CycloneDX: multiple license types in one component" {
     };
 
     // JSON.
-    var json_buf: std.ArrayList(u8) = .{};
+    var json_buf: std.ArrayListUnmanaged(u8) = .{};
     defer json_buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, json_buf.writer(testing.allocator));
     const json_out = json_buf.items;
@@ -1032,7 +1032,7 @@ test "CycloneDX: multiple license types in one component" {
     try testing.expect(std.mem.indexOf(u8, json_out, "NOASSERTION") != null);
 
     // XML.
-    var xml_buf: std.ArrayList(u8) = .{};
+    var xml_buf: std.ArrayListUnmanaged(u8) = .{};
     defer xml_buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, xml_buf.writer(testing.allocator));
     const xml_out = xml_buf.items;
@@ -1043,7 +1043,7 @@ test "CycloneDX: multiple license types in one component" {
 
 test "CycloneDX JSON: required top-level fields present" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
@@ -1064,7 +1064,7 @@ test "CycloneDX JSON: required top-level fields present" {
 
 test "CycloneDX XML: structural validity" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
@@ -1092,7 +1092,7 @@ test "CycloneDX XML: structural validity" {
 
 test "CycloneDX XML: tools include vendor group" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
 
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
@@ -1124,7 +1124,7 @@ test "CycloneDX: device component with description and properties in JSON and XM
     };
 
     // JSON.
-    var json_buf: std.ArrayList(u8) = .{};
+    var json_buf: std.ArrayListUnmanaged(u8) = .{};
     defer json_buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, json_buf.writer(testing.allocator));
     const json_out = json_buf.items;
@@ -1135,7 +1135,7 @@ test "CycloneDX: device component with description and properties in JSON and XM
     try testing.expect(std.mem.indexOf(u8, json_out, "cdx:device:type") != null);
 
     // XML.
-    var xml_buf: std.ArrayList(u8) = .{};
+    var xml_buf: std.ArrayListUnmanaged(u8) = .{};
     defer xml_buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, xml_buf.writer(testing.allocator));
     const xml_out = xml_buf.items;
@@ -1179,7 +1179,7 @@ test "CycloneDX JSON: round-trip serialize then parse" {
         }},
     };
 
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
 
@@ -1219,7 +1219,7 @@ test "CycloneDX XML: dependency with zero dependsOn" {
         }},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -1230,7 +1230,7 @@ test "CycloneDX XML: dependency with zero dependsOn" {
 
 test "CycloneDX XML: namespace and schema attributes" {
     const bom = makeTestBom();
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -1258,7 +1258,7 @@ test "CycloneDX XML: nested special chars in properties" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -1285,7 +1285,7 @@ test "CycloneDX XML: multiple compositions" {
             .{ .aggregate = .incomplete, .assemblies = &.{"c-lib-lwip"} },
         },
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -1323,7 +1323,7 @@ test "CycloneDX XML: dependency with zero dependsOn produces valid structure" {
         }},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serializeXml(testing.allocator, bom, buf.writer(testing.allocator));
     const output = buf.items;
@@ -1350,7 +1350,7 @@ test "CycloneDX JSON: externalReferences for component with source_url" {
         .dependencies = &.{},
         .compositions = &.{},
     };
-    var buf: std.ArrayList(u8) = .{};
+    var buf: std.ArrayListUnmanaged(u8) = .{};
     defer buf.deinit(testing.allocator);
     try serialize(testing.allocator, bom, .json, buf.writer(testing.allocator));
     const output = buf.items;

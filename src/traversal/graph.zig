@@ -26,8 +26,8 @@ pub const ExtractionContext = struct {
     options: ExtractionOptions,
     visited: std.StringHashMap(void),
     visited_modules: std.AutoHashMap(*std.Build.Module, void),
-    components: std.ArrayList(sbom_model.Component),
-    dependencies: std.ArrayList(sbom_model.Dependency),
+    components: std.ArrayListUnmanaged(sbom_model.Component),
+    dependencies: std.ArrayListUnmanaged(sbom_model.Dependency),
 
     pub fn init(allocator: std.mem.Allocator, options: ExtractionOptions) ExtractionContext {
         return .{
@@ -200,7 +200,7 @@ fn extractTransitiveDeps(
     var dep_urls_opt = resolveDepUrls(ctx.allocator, builder);
     defer if (dep_urls_opt) |*m| zon_parser.deinitDependencies(m, ctx.allocator);
 
-    var dep_refs: std.ArrayList([]const u8) = .{};
+    var dep_refs: std.ArrayListUnmanaged([]const u8) = .{};
     defer dep_refs.deinit(ctx.allocator);
 
     for (builder.available_deps) |dep_pair| {
