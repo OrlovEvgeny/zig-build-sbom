@@ -1,0 +1,16 @@
+.{
+    .name = .c_project,
+    .version = "1.0.0",
+    .fingerprint = 0xbd3e47351ba794c4,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "vendor",
+    },
+    .dependencies = .{
+        .@"zig-build-sbom" = .{
+            .path = "../../../..",
+        },
+    },
+}

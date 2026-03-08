@@ -1,0 +1,10 @@
+.{
+    .name = .libb,
+    .version = "0.2.0",
+    .fingerprint = 0xe3c56e59b4f19611,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

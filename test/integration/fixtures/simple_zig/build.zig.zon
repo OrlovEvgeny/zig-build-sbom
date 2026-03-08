@@ -1,0 +1,15 @@
+.{
+    .name = .simple_zig,
+    .version = "1.0.0",
+    .fingerprint = 0x2ab7e5287a1faf79,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+    .dependencies = .{
+        .@"zig-build-sbom" = .{
+            .path = "../../../..",
+        },
+    },
+}

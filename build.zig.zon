@@ -1,0 +1,17 @@
+.{
+    .name = .zig_build_sbom,
+    .version = "0.1.0",
+    .fingerprint = 0xf104ccfb609dd48c,
+    .minimum_zig_version = "0.14.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+    .dependencies = .{
+        .serde = .{
+            .url = "git+https://github.com/OrlovEvgeny/serde.zig#ea62f5dff07067591ca42bcbc642003470f3b110",
+            .hash = "serde-0.1.0-1DszT3KXCgBfMP994qB_2FKAKx3syDC330i_QjM9n0Ef",
+        },
+    },
+}
