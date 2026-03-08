@@ -2,7 +2,7 @@
 
 Build-time SBOM generator for Zig projects and bare-metal firmware.
 
-[![Zig](https://img.shields.io/badge/Zig-0.14.0+-f7a41d?logo=zig&logoColor=white)](https://ziglang.org)
+[![Zig](https://img.shields.io/badge/Zig-0.15.0+-f7a41d?logo=zig&logoColor=white)](https://ziglang.org)
 [![Release](https://img.shields.io/github/v/release/OrlovEvgeny/zig-build-sbom)](https://github.com/OrlovEvgeny/zig-build-sbom/releases)
 [![Tests](https://github.com/OrlovEvgeny/zig-build-sbom/actions/workflows/ci.yml/badge.svg)](https://github.com/OrlovEvgeny/zig-build-sbom/actions/workflows/ci.yml)
 
@@ -240,7 +240,7 @@ The two-phase split exists because `serde.zig` (like any normal Zig dependency) 
 
 ## Requirements
 
-- Zig 0.14.0+
+- Zig 0.15.0+
 
 ## License
 
